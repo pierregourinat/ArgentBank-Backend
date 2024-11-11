@@ -1,9 +1,9 @@
-swagger: '2.0'
+swagger: "2.0"
 info:
   title: Bank Argent API documentation
   description: Contains all available API endpoints in this codebase
-  version: '1.0.0'
-  termsOfService: 'http://swagger.io/terms/'
+  version: "1.0.0"
+  termsOfService: "http://swagger.io/terms/"
 host: localhost:3001
 basePath: /api/v1
 schemes:
@@ -21,17 +21,17 @@ paths:
           description: Login Payload
           required: true
           schema:
-            $ref: '#/definitions/Login'
+            $ref: "#/definitions/Login"
       produces:
         - application/json
       responses:
-        '200':
+        "200":
           description: Login Successfully
           schema:
-            $ref: '#/definitions/LoginResponse'
-        '400':
+            $ref: "#/definitions/LoginResponse"
+        "400":
           description: Invalid Fields
-        '500':
+        "500":
           description: Internal Server Error
   /user/signup:
     post:
@@ -45,17 +45,17 @@ paths:
           description: Signup Payload
           required: true
           schema:
-            $ref: '#/definitions/User'
+            $ref: "#/definitions/User"
       produces:
         - application/json
       responses:
-        '200':
+        "200":
           description: Signup Successfully
           schema:
-            $ref: '#/definitions/ApiResponse'
-        '400':
+            $ref: "#/definitions/ApiResponse"
+        "400":
           description: Invalid Fields
-        '500':
+        "500":
           description: Internal Server Error
   /user/profile:
     get:
@@ -65,16 +65,16 @@ paths:
         - User Module
       summary: User Profile API
       description: API for fetching a user profile
-      #produces:
-       # - application/json
+      produces:
+        - application/json
       responses:
-        '200':
+        "200":
           description: User profile retrieved successully
           schema:
-            $ref: '#/definitions/ApiResponse'
-        '400':
+            $ref: "#/definitions/ApiResponse"
+        "400":
           description: Invalid Fields
-        '500':
+        "500":
           description: Internal Server Error
     put:
       security:
@@ -89,17 +89,126 @@ paths:
           description: Update user profile attributes
           required: true
           schema:
-            $ref: '#/definitions/UserProfile'
+            $ref: "#/definitions/UserProfile"
       produces:
         - application/json
       responses:
-        '200':
+        "200":
           description: User profile retrieved successully
           schema:
-            $ref: '#/definitions/ApiResponse'
-        '400':
+            $ref: "#/definitions/ApiResponse"
+        "400":
           description: Invalid Fields
-        '500':
+        "500":
+          description: Internal Server Error
+  /accounts:
+    get:
+      security:
+        - Bearer: []
+      tags:
+        - Accounts Module
+      summary: List Accounts
+      description: Retrieve the list of bank accounts for the current user
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: Accounts retrieved successfully
+          schema:
+            $ref: "#/definitions/AccountListResponse"
+        "400":
+          description: Invalid Fields
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+  /accounts/{accountId}/transactions:
+    get:
+      security:
+        - Bearer: []
+      tags:
+        - Transactions Module
+      summary: List Transactions
+      description: Retrieve transactions for a specific account
+      parameters:
+        - in: path
+          name: accountId
+          required: true
+          type: string
+          description: Account identifier
+        - in: query
+          name: month
+          required: false
+          type: string
+          description: Desired month (format YYYY-MM)
+        - in: query
+          name: page
+          required: false
+          type: integer
+          description: Page number
+          default: 1
+        - in: query
+          name: limit
+          required: false
+          type: integer
+          description: Items per page
+          default: 20
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: Transactions retrieved successfully
+          schema:
+            $ref: "#/definitions/TransactionListResponse"
+        "400":
+          description: Invalid Fields
+        "401":
+          description: Unauthorized
+        "404":
+          description: Account Not Found
+        "500":
+          description: Internal Server Error
+  /accounts/{accountId}/transactions/{transactionId}:
+    put:
+      security:
+        - Bearer: []
+      tags:
+        - Transactions Module
+      summary: Update Transaction
+      description: Modify information of an existing transaction
+      parameters:
+        - in: path
+          name: accountId
+          required: true
+          type: string
+          description: Account identifier
+        - in: path
+          name: transactionId
+          required: true
+          type: string
+          description: Transaction identifier
+        - in: body
+          name: body
+          description: Transaction update data
+          required: true
+          schema:
+            $ref: "#/definitions/TransactionUpdate"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: Transaction updated successfully
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        "400":
+          description: Invalid Fields
+        "401":
+          description: Unauthorized
+        "404":
+          description: Transaction Not Found
+        "422":
+          description: Validation Error
+        "500":
           description: Internal Server Error
 securityDefinitions:
   Bearer:
@@ -156,3 +265,67 @@ definitions:
     properties:
       userName:
         type: string
+  Account:
+    type: object
+    properties:
+      id:
+        type: string
+        description: account identifier
+      title:
+        type: string
+        description: account title
+      amount:
+        type: number
+        format: double
+        description: account balance
+      description:
+        type: string
+        description: account description
+  AccountListResponse:
+    type: object
+    properties:
+      accounts:
+        type: array
+        items:
+          $ref: "#/definitions/Account"
+  Transaction:
+    type: object
+    properties:
+      id:
+        type: string
+        description: transaction identifier
+      accountId:
+        type: string
+        description: account identifier
+      date:
+        type: string
+        format: date-time
+        description: transaction date
+      amount:
+        type: number
+        format: double
+        description: transaction amount
+      description:
+        type: string
+        description: transaction description
+      category:
+        type: string
+        enum: [alimentation, transport, logement, loisirs, santé, autres]
+        description: transaction category
+  TransactionUpdate:
+    type: object
+    properties:
+      description:
+        type: string
+        description: updated transaction description
+      category:
+        type: string
+        enum: [alimentation, transport, logement, loisirs, santé, autres]
+        description: updated transaction category
+  TransactionListResponse:
+    type: object
+    properties:
+      transactions:
+        type: array
+        items:
+          $ref: "#/definitions/Transaction"
