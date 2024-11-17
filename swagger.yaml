@@ -141,18 +141,7 @@ paths:
           required: false
           type: string
           description: Desired month (format YYYY-MM)
-        - in: query
-          name: page
-          required: false
-          type: integer
-          description: Page number
-          default: 1
-        - in: query
-          name: limit
-          required: false
-          type: integer
-          description: Items per page
-          default: 20
+          default: '{{now format="2006-01"}}'
       produces:
         - application/json
       responses:
